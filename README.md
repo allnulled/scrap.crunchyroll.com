@@ -22,5 +22,5 @@ El scrap ha sido realizado con:
 
  - Las imágenes se han obviado para no molestar demasiado a los servidores de [crunchyroll.com](https://crunchyroll.com).
  - También han sido ignorados los ficheros JSON del proceso del scrap.
- - Igualmente, los datos recopilados están en formato JSON en `app/myanimelist.net.all.json`.
+ - Igualmente, los datos recopilados están en formato JSON en [`app/crunchyroll.popular.json`](https://github.com/allnulled/scrap.crunchyroll.com/blob/main/app/crunchyroll.popular.json) y [`app/crunchyroll.popular.details.json`](https://github.com/allnulled/scrap.crunchyroll.com/blob/main/app/crunchyroll.popular.details.json).
  - *Faltan algunos títulos por detallar.*
