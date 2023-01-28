@@ -1,0 +1,316 @@
+Empaquetable con
+  ./crunchyroll.popular.js
+  ./crunchyroll.popular.details.js
+
+Ejecutable como documento HTML5
+    con autor allnulled
+    con nombre app-por-defecto
+    con versión 0.0.1
+<head>
+    <title>Manga | CrunchyRoll</title>
+    <meta charset="utf8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+    .lista_de_manga th {
+        background-color: #222;
+        color: white;
+        padding: 4px;
+    }
+    .lista_de_manga td {
+        white-space: nowrap;
+        text-align: left;
+        font-size: 12px;
+        padding: 0px;
+    }
+    .visor_de_tabla {
+        overflow-x: scroll;
+        height: 500px;
+        resize: vertical;
+    }
+    .hidden {
+        display: none;
+    }
+    .wrapable {
+        white-space: break-spaces;
+    }
+    .enunciado {
+        font-weight: bold;
+        text-decoration: underline;
+    }
+    .no_padding {
+        padding: 0px;
+    }
+    hr {
+        margin: 0;
+        border: none;
+        border-top: 1px solid #333;
+    }
+    ul {
+        padding: 0;
+        margin: 0;
+    }
+    </style>
+</head>
+<body><div id="app"></div></body>.
+
+importo api nativa.
+
+creo PaginaDeInicio como un componente vue2 con nombre "PaginaDeInicio" con plantilla {
+  <div class="PaginaDeInicio Component">
+    <h3>Manga | CrunchyRoll</h3>
+    <table>
+        <tr>
+            <td style="width: 100%;">
+                <input style="width: 100%;" type="text" placeholder="Buscar" v-model="texto_a_buscar" />
+            </td>
+            <td>
+                <select v-model="pagina_items">
+                    <option :value="20">20</option>
+                    <option :value="50">50</option>
+                    <option :value="100">100</option>
+                    <option :value="500">500</option>
+                    <option :value="1000">1000</option>
+                </select>
+            </td>
+        </tr>
+    </table>
+    <div v-if="esta_cargando">
+        Cargando...
+    </div>
+    <div class="visor_de_tabla" v-else-if="manga_seleccionado">
+        <table class="lista_de_manga">
+            <tbody>
+                <tr>
+                    <td colspan="100">
+                        <table>
+                            <tr>
+                                <td><button v-on:click="() => ir_a_pagina_anterior()"> « </button></td>
+                                <td>Página <input type="number" v-model.number="pagina_actual" /> de {{ paginas_totales }}</td>
+                                <td><button v-on:click="() => ir_a_pagina_posterior()"> » </button></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <th style="width: 30px;">Índice</th>
+                    <th style="width: 30px;">Ir</th>
+                    <th style="width: 30px;">Detalles</th>
+                    <th style="">Título</th>
+                </tr>
+            </tbody>
+            <tbody v-for="(manga_item, manga_index) in manga_seleccionado" v-bind:key="'manga-row-' + manga_index">
+                <tr>
+                    <td>[{{ manga_index + 1 }}]</td>
+                    <td class="no_contraer_texto">
+                        <a :href="manga_item.link" target="_blank">
+                            <button class="no_padding">Ir</button>
+                        </a>
+                    </td>
+                    <td class="no_contraer_texto">
+                        <button v-if="detalles_seleccionados.indexOf(manga_item.title) === -1" class="no_padding" v-on:click="() => ver_detalles(manga_item.title)">Más</button>
+                        <button v-else class="no_padding" v-on:click="() => ver_detalles(manga_item.title)">OK</button>
+                    </td>
+                    <td class="no_contraer_texto">{{ manga_item.title }}</td>
+                </tr>
+                <tr v-if="manga_item.title in manga_todo_detalles" :class="{hidden: detalles_seleccionados.indexOf(manga_item.title) === -1}">
+                    <td colspan="4" style="">
+                        <div style="position: relative; min-height: 100px; resize: vertical;">
+                            <div>
+                                <div>
+                                    <hr/>
+                                    <div>
+                                        <span class="enunciado">Título:</span> 
+                                        <span class="wrapable">{{ manga_todo_detalles[manga_item.title].title }}</span>
+                                    </div>
+                                    <hr/>
+                                    <div>
+                                        <span class="enunciado">Puntuación:</span> 
+                                        <span class="wrapable">{{ manga_todo_detalles[manga_item.title].rating }}</span>
+                                    </div>
+                                    <hr/>
+                                    <div>
+                                        <span class="enunciado">Descripción:</span> 
+                                        <span class="wrapable">{{ manga_todo_detalles[manga_item.title].description }}</span>
+                                    </div>
+                                    <hr/>
+                                    <div>
+                                        <span class="enunciado">Presentación:</span> 
+                                        <span class="wrapable">{{ manga_todo_detalles[manga_item.title].metatags }}</span>
+                                    </div>
+                                    <hr/>
+                                    <div>
+                                        <span class="enunciado">Capítulos:</span> 
+                                        <ul>
+                                            <li v-for="(chapter, chapter_index) in manga_todo_detalles[manga_item.title].chapters" v-bind:key="'serie-' + manga_index + '-capitulo-' + chapter_index">
+                                                <span>{{ chapter_index + 1 }}. {{ chapter }}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <hr/>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <td colspan="100">
+                        <table>
+                            <tr>
+                                <td><button v-on:click="() => ir_a_pagina_anterior()"> « </button></td>
+                                <td>Página <input type="number" v-model.number="pagina_actual" /> de {{ paginas_totales }}</td>
+                                <td><button v-on:click="() => ir_a_pagina_posterior()"> » </button></td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+  </div>
+} con lógica {
+    retorno {
+        método data donde {
+            retorno {
+                propiedad esta_cargando como true.
+                propiedad manga_todo como undefined.
+                propiedad manga_todo_detalles como undefined.
+                propiedad manga_seleccionado como undefined.
+                propiedad manga_paginado como undefined.
+                propiedad pagina_actual como 0.
+                propiedad pagina_actual_refleja como 0.
+                propiedad paginas_totales como 0.
+                propiedad pagina_items como 20.
+                propiedad texto_a_buscar como "".
+                propiedad id_de_retardo como 0.
+                propiedad detalles_seleccionados como [].
+            }.
+        }.
+        propiedad methods como {
+            método ir_a_pagina_anterior donde {
+                si this.pagina_actual no es igual que 0 {
+                    decremento this.pagina_actual.
+                }.
+            }.
+            método ir_a_pagina_posterior donde {
+                incremento this.pagina_actual.
+            }.
+            método asíncrono cargar_datos donde {
+                creo datos como { data: all_manga }.
+                [*
+                creo datos como asíncronamente una petición http 
+                    con url "/CrunchyRoll.popular.json"
+                    con método "GET"
+                    con cuerpo {}
+                    con cabeceras {}.
+                *]
+                asigno this.manga_todo_detalles como window.all_manga_details.
+                asigno this.manga_todo como Object.values(datos.data).
+            }.
+            método cargar_manga_seleccionado donde {
+                creo manga_paginado_filtrado_por_texto como un hecho donde {
+                    si this.texto_a_buscar es igual que "" retorno this.manga_paginado.
+                    retorno this.manga_paginado.filter(una lambda con (item) donde {
+                        creo texto_de_item como item textualizado.toLowerCase().
+                        retorno texto_de_item.indexOf(this.texto_a_buscar.toLowerCase()) no es igual que 0-1.
+                    }).
+                }.
+                creo manga_paginado_filtrado_por_texto_y_pagina como un hecho donde {
+                    creo resultado como [].
+                    creo variable pagina como 0.
+                    desde 0 hasta manga_paginado_filtrado_por_texto.length {
+                        si pagina es igual que this.pagina_actual {
+                            creo item como manga_paginado_filtrado_por_texto[index].
+                            apendizo item en resultado.
+                        }.
+                        si ((index+1) % this.pagina_items) es igual que 0 {
+                            incremento pagina.
+                        }.
+                    }.
+                    asigno this.paginas_totales como pagina.
+                    retorno resultado.
+                }.
+                asigno this.manga_seleccionado como manga_paginado_filtrado_por_texto_y_pagina.
+            }.
+            método ver_detalles con (titulo) donde {
+                creo posicion como this.detalles_seleccionados.indexOf(titulo).
+                imprimo posicion.
+                si posicion no es igual que 0-1 {
+                    imprimo "Quitando item".
+                    hago this.detalles_seleccionados.splice(posicion, 1).
+                } y si no {
+                    imprimo "Poniendo item".
+                    apendizo titulo en this.detalles_seleccionados.
+                    hago this.$forceUpdate(true).
+                }.
+            }.
+        }.
+        propiedad watch como {
+            método manga_todo con (nuevo_valor) donde {
+                asigno this.manga_paginado como nuevo_valor.
+            }.
+            método manga_paginado con (nuevo_valor) donde {
+                asigno this.esta_cargando como true.
+                asigno this.texto_a_buscar como "".
+                asigno this.pagina_actual como 0.
+                asigno this.esta_cargando como false.
+                hago this.cargar_manga_seleccionado().
+            }.
+            método pagina_actual con (nuevo_valor) donde {
+                si this.esta_cargando retorno.
+                hago this.cargar_manga_seleccionado().
+            }.
+            método pagina_items con (nuevo_valor) donde {
+                si this.esta_cargando retorno.
+                hago this.cargar_manga_seleccionado().
+            }.
+            método texto_a_buscar con (nuevo_valor) donde {
+                si this.esta_cargando retorno.
+                hago clearTimeout(this.id_de_retardo).
+                asigno this.esta_cargando como true.
+                asigno this.id_de_retardo como setTimeout(una lambda donde {
+                    asigno this.esta_cargando como false.
+                    hago this.cargar_manga_seleccionado().
+                }, 3000).
+            }.
+        }.
+        método asíncrono mounted donde {
+            hago this.cargar_datos().
+        }.
+    }.
+}.
+
+creo App como una aplicación vue2 con nombre "App" con rutas [{
+    propiedad path como "/".
+    propiedad name como "Home".
+    propiedad component como PaginaDeInicio.
+    propiedad props como {}.
+}] con traducciones {
+    propiedad es como {}.
+    propiedad en como {}.
+    propiedad ca como {}.
+} con plantilla {
+  <div class="App Component Castelog-app">
+    <router-view></router-view>
+  </div>
+} con estilos {
+    html {}
+    body {}
+    .Component {}
+    .App {}
+} con lógica {
+  retorno {
+    método data donde {
+      retorno {
+        
+      }.
+    }.
+    propiedad methods como {}.
+    propiedad watch como {}.
+    método beforeMount donde {}.
+    método mounted donde {}.
+  }.
+} montada en "#app".
