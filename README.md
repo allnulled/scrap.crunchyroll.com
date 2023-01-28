@@ -23,3 +23,4 @@ El scrap ha sido realizado con:
  - Las imágenes se han obviado para no molestar demasiado a los servidores de [crunchyroll.com](https://crunchyroll.com).
  - También han sido ignorados los ficheros JSON del proceso del scrap.
  - Igualmente, los datos recopilados están en formato JSON en `app/myanimelist.net.all.json`.
+ - *Faltan algunos títulos por detallar.*
