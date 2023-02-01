@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crunchyroll.com</title>
+</head>
+<body>
+    <style>
+        #boton_de_reanudar {
+            position: fixed;
+            top: 5px;
+            bottom: auto;
+            left: auto;
+            right: 5px;
+            padding: 10px;
+        }
+        #boton_de_siguiente {
+            position: fixed;
+            top: 5px;
+            bottom: auto;
+            left: 5px;
+            right: auto;
+            padding: 10px;
+        }
+    </style>
+    <h1>Crunchyroll <span id="counter"></span></h1>
+    <button id="boton_de_reanudar" onclick="window.cambiar_estado_de_reanudacion()">Parar</button>
+    <button id="boton_de_siguiente" onclick="window.next_link()">Siguiente</button>
+    <ul id="manga_list">
+    </ul>
+    <script>
+        (async function () {
+            const response = await fetch("./all_manga.json");
+            const all_manga = await response.json();
+            const ul_element = document.getElementById("manga_list");
+            for (let index = 0; index < all_manga.length; index++) {
+                const manga = all_manga[index];
+                const li_element = document.createElement("li");
+                const a_element = document.createElement("a");
+                a_element.href = manga.link;
+                a_element.textContent = manga.title;
+                a_element.target = "_blank";
+                li_element.appendChild(a_element);
+                ul_element.appendChild(li_element);
+            }
+            window.activar_reanudacion = undefined;
+            window.promesa_de_reanudacion = new Promise(ok => ok());
+            window.cambiar_estado_de_reanudacion = function () {
+                const boton = document.getElementById("boton_de_reanudar");
+                if (boton.textContent === "Parar") {
+                    window.promesa_de_reanudacion = new Promise(ok => {
+                        window.activar_reanudacion = ok;
+                    });
+                    boton.textContent = "Reanudar";
+                } else {
+                    window.activar_reanudacion();
+                    boton.textContent = "Parar";
+                }
+            };
+            window.next_link_promise = undefined;
+            window.next_link = function () {
+                window.next_link_promise();
+            };
+            const simplyWait = time => new Promise(ok => {
+                window.next_link_promise = ok;
+                setTimeout(() => ok(), time);
+            });
+            const as = Array.from(document.querySelectorAll("a"));
+            // return;
+            for (let i = 0; i < as.length; i++) {
+                await window.promesa_de_reanudacion;
+                const a = as[i];
+                a.click();
+                document.getElementById("counter").textContent = "" + (as.length - i);
+                await simplyWait(10 * 1000);
+            }
+        })();
+    </script>
+</body>
+</html>

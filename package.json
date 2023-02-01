@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@json2csv/plainjs": "^6.1.2",
+    "http-server": "^14.1.1",
     "recolector-web": "^1.0.0"
   }
 }
